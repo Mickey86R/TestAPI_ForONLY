@@ -12,5 +12,13 @@ namespace TestAPI_ForONLY.Model
 
         public Post Post { get; set; }
         public Department Dept { get; set; }
+
+        public override string ToString()
+        {
+            if (Dept.Parent != null)
+                return $"{ID}; {Surname} {Name} {Patronymic}; {Post.Name}; {Dept.Name} {Dept.Parent.Name}";
+            return $"{ID}; {Surname} {Name} {Patronymic}; {Post.Name}; {Dept.Name}";
+        }
+
     }
 }

@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 using System.Net.Http.Headers;
 
 using TestAPI_ForONLY.Model;
+using System.Data;
 
 namespace TestAPI_ForONLY.Controllers
 {
@@ -33,60 +34,11 @@ namespace TestAPI_ForONLY.Controllers
         [HttpGet]
         public async Task<ActionResult<IEnumerable<Customer>>> ImportFromFile()
         {
-            using ()
-            Excel.Application ex = new Microsoft.Office.Interop.Excel.Application();
-            ex.Visible = false;
-            ex.Workbooks.Open(@"C:\Users\Михаил\Desktop\Тестовые данные.xlsx");
-            Excel.Worksheet sheet = (Excel.Worksheet)ex.Worksheets.get_Item(1);
+            string path = @"C:\Users\Михаил\Desktop\Fuck.xlsx";
 
-            MyContext newDB = new MyContext();
+            DataTable dataTable = FileManager.GetTableFromFile(path);
 
-            int i = 1;
-            while (sheet.Cells[i, 0].ToString() != "")
-            {
-                // проверка на наличие встреченного названия предприятия
-
-                string nameOfDep = sheet.Cells[i, 1].ToString();
-                Department dep = newDB.Depts.FirstOrDefault(d => d.Name == nameOfDep);
-
-                if (dep == null)
-                {
-                    string nameOfParent = sheet.Cells[i, 2].ToString();
-                    var depParent = newDB.Depts.FirstOrDefault(d => d.Name == nameOfParent);
-
-                    dep = new Department() { Name = nameOfDep, Parent = depParent };
-
-                    newDB.Depts.Add(dep);
-                }
-
-                // проверка на наличие встреченной должности
-
-                string nameOfPost = sheet.Cells[i, 3].ToString();
-                Post post = newDB.Posts.FirstOrDefault(d => d.Name == nameOfPost);
-
-                if (post == null)
-                {
-                    post = new Post() { Name = nameOfPost};
-
-                    newDB.Posts.Add(post);
-                }
-
-                // импорт пользователя
-
-                string[] nameOfCust = sheet.Cells[i, 4].ToString().Split(' ');
-
-
-                Customer customer = new Customer()
-                {
-                    Surname = nameOfCust[0],
-                    Name = nameOfCust[1],
-                    Patronymic = nameOfCust[2],
-                    Post = post,
-                    Dept = dep
-                };
-
-                i++;
-            }
+            MyContext newDB = DBGenerator.GetDBFromTable(dataTable);
 
             return newDB.Customers;
         }

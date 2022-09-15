@@ -121,16 +121,25 @@
             tr.setAttribute("data-rowid", user.id);
 
             const idTd = document.createElement("td");
-            idTd.append(user.id);
+            idTd.append(user.ID);
             tr.append(idTd);
 
+            const surTd = document.createElement("td");
+            surTd.append(user.Surname);
+            tr.append(surTd);
+
             const nameTd = document.createElement("td");
-            nameTd.append(user.name);
+            nameTd.append(user.Name);
             tr.append(nameTd);
 
-            const ageTd = document.createElement("td");
-            ageTd.append(user.age);
-            tr.append(ageTd);
+
+            const postTd = document.createElement("td");
+            postTd.append(user.Post.Name);
+            tr.append(postTd);
+
+            const depTd = document.createElement("td");
+            depTd.append(user.Dept.Name);
+            tr.append(depTd);
 
             const linksTd = document.createElement("td");
 
