@@ -4,8 +4,7 @@ async function GetUsers() {
     // отправляет запрос и получаем ответ
     const response = await fetch("/API/ImportFromFile", {
         method: "GET",
-        headers: { "Accept": "application/json" },
-        body: "C:\Users\Михаил\Desktop\Тестовые данные.xlsx"
+        headers: { "Accept": "application/json" }
     });
     // если запрос прошел нормально
     if (response.ok === true) {

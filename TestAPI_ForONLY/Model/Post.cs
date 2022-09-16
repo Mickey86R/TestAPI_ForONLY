@@ -7,5 +7,10 @@ namespace TestAPI_ForONLY.Model
         [Column("Post_ID")]
         public int ID { get; set; }
         public string Name { get; set; }
+
+        [Column("Dept_ID")]
+        public int DeptID { get; set; }
+
+        public Department Dept { get; set; }
     }
 }

@@ -19,7 +19,7 @@ namespace TestAPI_ForONLY.Model
 
         protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
         {
-            optionsBuilder.UseNpgsql("Host=localhost;Port=5432;Database=usersdb;Username=NewUser;Password=123qweASD");
+            optionsBuilder.UseNpgsql("Host=localhost;Port=5432;Database=usersdb;Username=newUser;Password=123qweASD");
         }
     }
 }

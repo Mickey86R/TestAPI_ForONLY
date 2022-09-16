@@ -10,8 +10,20 @@ namespace TestAPI_ForONLY.Model
         public string Name { get; set; }
         public string Patronymic { get; set; }
 
+        public int PostID { get; set; }
+        public int DeptID { get; set; }
+
         public Post Post { get; set; }
         public Department Dept { get; set; }
+
+
+        public void Update(Customer newCustomer)
+        {
+            this.PostID = newCustomer.PostID;
+            this.Post = newCustomer.Post;
+            this.DeptID = newCustomer.DeptID;
+            this.Dept = newCustomer.Dept;
+        }
 
         public override string ToString()
         {

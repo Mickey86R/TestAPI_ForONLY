@@ -4,12 +4,14 @@ using System.Data;
 using System.IO;
 
 
-namespace TestAPI_ForONLY
+namespace TestAPI_ForONLY.Repository
 {
     public static class FileManager
     {
-        public static DataTable GetTableFromFile(string path)
+        public static async Task<DataTable> GetTableFromFile(string path)
         {
+            ExcelPackage.LicenseContext = LicenseContext.NonCommercial;
+
             using (var excelPack = new ExcelPackage(path))
             {
                 //Load excel stream
@@ -40,7 +42,7 @@ namespace TestAPI_ForONLY
                     excelTable.Rows[i][3] = ws.Cells[i, 3].Value;
                     excelTable.Rows[i][4] = ws.Cells[i, 4].Value;
 
-                    ShowCellsInRow(excelTable.Rows[i].ItemArray);
+                    //ShowCellsInRow(excelTable.Rows[i].ItemArray);
                 }
 
                 return excelTable;

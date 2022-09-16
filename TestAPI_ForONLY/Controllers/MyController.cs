@@ -4,13 +4,15 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.AspNetCore.Mvc;
 using System.Threading.Tasks;
 using System.Net.Http.Headers;
+using System.Data;
+using Newtonsoft.Json;
 
 using TestAPI_ForONLY.Model;
-using System.Data;
+using TestAPI_ForONLY.Repository;
 
 namespace TestAPI_ForONLY.Controllers
 {
-    [Route("/MyCar_API/")]
+    [Route("/API/")]
     [ApiController]
     public class MyController : ControllerBase
     {
@@ -21,110 +23,105 @@ namespace TestAPI_ForONLY.Controllers
             this.db = context;
         }
 
+        
 
+        // CRUD для получения оргструктуры
+        [Route("/API/GetDepartments")]
         [HttpGet]
-        public string Get()
+        public async Task<ActionResult<IEnumerable<Department>>> GetDepartments()
         {
-            string s = "Всё работает";
+            var depts = await db.Depts.ToListAsync();
 
-            return s;
+            depts = await DBService.GetDepartmentsFirstOut(depts);
+
+            return depts;
         }
 
-        [Route("/API/ImportFromFile")]
+        // CRUD для получения оргструктуры с фильтром родительского объекта
+        [Route("/API/GetDepartmentsWithFilter")]
         [HttpGet]
-        public async Task<ActionResult<IEnumerable<Customer>>> ImportFromFile()
+        public async Task<ActionResult<IEnumerable<Department>>> GetDepartmentsWithFilter(string? parent)
         {
-            string path = @"C:\Users\Михаил\Desktop\Fuck.xlsx";
+            List<Department>? depts;
 
-            DataTable dataTable = FileManager.GetTableFromFile(path);
+            if (parent == null)
+            {
+                depts = await db.Depts.Where(d => d.ParentID == null).ToListAsync();
+            }
+            else
+            {
+                depts = await db.Depts.Where(d => (d.Parent != null) && d.Parent.Name == parent).ToListAsync();
+            }
 
-            MyContext newDB = DBGenerator.GetDBFromTable(dataTable);
+            depts = await DBService.GetDepartmentsFirstOut(depts);
 
-            return newDB.Customers;
+            return depts;
         }
 
-        [Route("/MyCar_API/GetAutos")]
+        // эндпоинт для вывода информации по количеству сотрудников в каждом отделе и количеству позиций в этом отделе
+        [Route("/API/GetInfoFromDepts")]
         [HttpGet]
-        public async Task<ActionResult<IEnumerable<Customer>>> GetAutos()
+        public async Task<ActionResult<IEnumerable<DeptInfo>>> GetInfoFromDepts()
         {
-            return new List<Customer>();
+            var deptList = await db.Depts.ToListAsync();
+            var listInfo = new List<DeptInfo>();
+
+            foreach (var item in deptList)
+            {
+                string name = item.Name;
+                int postCount = db.Posts.Where(p => p.DeptID == item.ID).Count();
+                int custCount = db.Customers.Where(c => c.DeptID == item.ID).Count();
+                
+                listInfo.Add(new DeptInfo(name, postCount, custCount));
+            }
+
+            return listInfo;
         }
 
-        [Route("/MyCar_API/GetAutoFromUser/{id}")]
+
+        [Route("/API/GetPosts")]
         [HttpGet]
-        public IEnumerable<Customer> GetAutoFromUser(int id)
+        public async Task<ActionResult<IEnumerable<Post>>> GetPosts(int id)
         {
-            return new List<Customer>();
+            return await db.Posts.ToListAsync();
         }
 
-        [Route("/MyCar_API/GetUsers")]
+        [Route("/API/GetCustomers")]
         [HttpGet]
-        public async Task<ActionResult<IEnumerable<Customer>>> GetUsers()
+        public async Task<ActionResult<IEnumerable<Customer>>> GetCustomers()
         {
             return await this.db.Customers.ToListAsync();
         }
 
-        [Route("/MyCar_API/GetUser/{id}")]
-        public async Task<ActionResult<Customer>> GetUserFromID(int id)
-        {
-            Customer user = await db.Customers.FirstOrDefaultAsync(x => x.ID == id); // Получить пользователя из БД с заданым id
-
-            if (user == null)
-                return NotFound();
-
-            return user;
-        }
-
         //--------------------------------------POST
 
-        [HttpPost("/API/PostFromFile/")]
-        public async Task<ActionResult> PostUser(Customer newUser)
+
+        // парсинг данных из .xlsx файла
+        [HttpPost("/API/ImportFromFile/")]
+        public async Task<ActionResult<IEnumerable<Customer>>> ImportFromFile(string path)
         {
-            Customer user = db.Customers.FirstOrDefault(x => x.ID == newUser.ID);
+            //string path = @"C:\Users\User\Downloads\Тестовые данные (1).xlsx";
 
-            db.Customers.Add(user);
-            db.SaveChanges();
+            DataTable dataTable = await FileManager.GetTableFromFile(path);
 
-            return Ok(user);
+            MyContext newDB = await DBService.GetDBFromTable(dataTable);
+
+            if (db.Posts.Count() == 0)
+            {
+                db = newDB;
+                db.SaveChanges();
+            }
+
+            return await newDB.Customers.ToListAsync();
         }
-
-        [HttpPost("/MyCar_API/PostUser/")]
-        public async Task<ActionResult> PostUser1(Customer newUser)
-        {
-            Customer user = db.Customers.FirstOrDefault(x => x.ID == newUser.ID);
-
-            db.Customers.Add(user);
-            db.SaveChanges();
-
-            return Ok(user);
-        }
-
 
 
         //--------------------------------------PUT
 
-        [HttpPut("/MyCar_API/PutUser/")]
-        public async Task<ActionResult> PutUser(Customer newUser)
-        {
-            Customer user = db.Customers.FirstOrDefault(x => x.ID == newUser.ID);
 
-            db.Customers.Update(user);
-            db.SaveChanges();
-
-            return Ok(user);
-        }
 
         //--------------------------------------DELETE
 
-        [HttpDelete("/MyCar_API/DelUser/{id}")]
-        public async Task<ActionResult<Customer>> DelUser(int id)
-        {
-            Customer user = db.Customers.FirstOrDefault(x => x.ID == id);
-            db.Customers.Remove(user);
 
-            await db.SaveChangesAsync();
-
-            return Ok(user);
-        }
     }
 }

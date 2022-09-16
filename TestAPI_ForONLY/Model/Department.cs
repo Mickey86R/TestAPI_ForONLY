@@ -7,6 +7,8 @@ namespace TestAPI_ForONLY.Model
         [Column("Dept_ID")]
         public int ID { get; set; }
         public string Name { get; set; }
+
+        public int? ParentID { get; set; }
         public Department? Parent { get; set; }
     }
 }
